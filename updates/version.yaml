@@ -142,3 +142,7 @@
     - create_posts_categories_table.php
 1.12.1: Added Tag list component.
 1.12.2: Added Vietnamese translation.
+1.13.1:
+    - Multisite compatibility for OctoberCMS v3.
+    - add_multisite_fields_to_table.php
+    - migrate_indikator_news_posts_table.php

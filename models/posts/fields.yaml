@@ -24,7 +24,14 @@ fields:
         label: indikator.news::lang.form.tags
         type: taglist
         span: storm
-        cssClass: col-md-6
+        cssClass: col-md-6   
+          
+    site:
+        type: partial
+        path: '$/indikator/news/controllers/posts/_site.htm'
+        label: 'indikator.news::lang.form.site'
+        span: storm
+        cssClass: 'col-sm-12 col-lg-6'
 
 tabs:
 
@@ -169,3 +176,15 @@ secondaryTabs:
             default: 2
             span: storm
             cssClass: col-xs-6
+            
+        show_timeline:
+            label: 'indikator.news::lang.form.show_timeline'
+            type: checkbox
+            span: storm
+            cssClass: 'col-xs-6'
+
+        show_nova:
+            label: 'indikator.news::lang.form.show_nova'
+            type: checkbox
+            span: storm
+            cssClass: 'col-xs-6'

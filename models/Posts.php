@@ -1,6 +1,7 @@
 <?php namespace Indikator\News\Models;
 
 use Model;
+use Site;
 use BackendAuth;
 use Carbon\Carbon;
 use Cms\Classes\Page as CmsPage;
@@ -10,6 +11,7 @@ use App;
 use October\Rain\Database\NestedTreeScope;
 use Str;
 use Url;
+use System\Models\SiteDefinition;
 
 class Posts extends Model
 {
@@ -60,7 +62,8 @@ class Posts extends Model
     ];
 
     public $belongsTo = [
-        'user' => ['Backend\Models\User']
+        'user' => ['Backend\Models\User'],
+//         'site' => [SiteDefinition::class]
     ];
 
     public $hasMany = [
@@ -348,6 +351,36 @@ class Posts extends Model
             ->whereNotNull('published_at')
             ->where('published_at', '<', Carbon::now())
         ;
+    }
+    
+    public function scopeOnlyAccepted($query)
+    {
+        $site = Site::getEditSite();
+        
+        $query->where(function($query) use ($site) {
+            $query
+            ->where('site_id', '!=', $site->id)
+            ->whereHas('sites', function($q) use ($site) {
+                $q->where('site_id', $site->id)
+                ->whereNotNull('accepted_at');
+            });
+        });
+            
+            return $query;
+    }
+    
+    public function scopeOnlyPushed($query)
+    {
+        $site = Site::getEditSite();
+        
+        $query->where(function($query) use ($site) {
+            $query
+            ->whereHas('sites', function($q) use ($site) {
+                $q->where('site_id', '!=', $site->id);
+            });
+        });
+            
+        return $query;
     }
 
     /**

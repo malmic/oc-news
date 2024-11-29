@@ -220,6 +220,13 @@ class Posts extends Controller
 
         return $this->makePartial('show_image');
     }
+    
+    public function onShowSite()
+    {
+        $this->vars['post'] = $post = Item::whereId(post('id'))->first();
+        
+        return $this->makePartial('belongs_to_site');
+    }
 
     public function onShowStat()
     {

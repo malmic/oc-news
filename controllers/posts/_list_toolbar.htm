@@ -46,6 +46,47 @@
             <?= e(trans('indikator.news::lang.form.status_draft')) ?>
         </button>
     </div>
+    <div class="btn-group">
+        <button
+            class="btn btn-default oc-icon-clipboard"
+            disabled="disabled"
+            onclick="$(this).data('request-data', {
+                checked: $('.control-list').listWidget('getChecked')
+            })"
+            data-request="onAcceptOriginalPosts"
+            data-trigger-action="enable"
+            data-trigger=".control-list input[type=checkbox]"
+            data-trigger-condition="checked"
+            data-stripe-load-indicator>
+            <?= e(trans('seimaldigital.sharednews::lang.button.accept_original')) ?>
+        </button>
+        <button
+            class="btn btn-default oc-icon-files-o"
+            disabled="disabled"
+            onclick="$(this).data('request-data', {
+                checked: $('.control-list').listWidget('getChecked')
+            })"
+            data-request="onDuplicateToRegionPosts"
+            data-trigger-action="enable"
+            data-trigger=".control-list input[type=checkbox]"
+            data-trigger-condition="checked"
+            data-stripe-load-indicator>
+            <?= e(trans('seimaldigital.sharednews::lang.button.duplicate_to_region')) ?>
+        </button>
+        <button
+            class="btn btn-default oc-icon-ban"
+            disabled="disabled"
+            onclick="$(this).data('request-data', {
+                checked: $('.control-list').listWidget('getChecked')
+            })"
+            data-request="onDeclineOriginalPosts"
+            data-trigger-action="enable"
+            data-trigger=".control-list input[type=checkbox]"
+            data-trigger-condition="checked"
+            data-stripe-load-indicator>
+            <?= e(trans('seimaldigital.sharednews::lang.button.decline_shared')) ?>
+        </button>
+    </div>
     <button
         class="btn btn-danger oc-icon-trash-o"
         disabled="disabled"

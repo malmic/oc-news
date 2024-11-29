@@ -10,20 +10,15 @@ scopes:
         nameFrom: name
         scope: FilterCategories
 
-    statistics:
-        label: indikator.news::lang.stat.viewed
-        type: numberrange
-        conditions: statistics >= ':min' and statistics <= ':max'
+#    statistics:
+#        label: indikator.news::lang.stat.viewed
+#        type: numberrange
+#        conditions: statistics >= ':min' and statistics <= ':max'
 
-    last_send_at:
-        label: indikator.news::lang.form.last_send
-        type: daterange
-        conditions: last_send_at >= ':after' AND last_send_at <= ':before'
-
-    published_date:
-        label: indikator.news::lang.form.published_at
-        type: daterange
-        conditions: published_at >= ':after' AND published_at <= ':before'
+#    last_send_at:
+#        label: indikator.news::lang.form.last_send
+#        type: daterange
+#        conditions: last_send_at >= ':after' AND last_send_at <= ':before'
 
     status_published:
         label: indikator.news::lang.form.status_published
@@ -40,6 +35,16 @@ scopes:
         type: checkbox
         conditions: status = 3
 
+    shared_by_other:
+        label: seimaldigital.sharednews::lang.form.shared_by_other
+        type: checkbox
+        scope: onlyPushed
+        
+    shared_accepted:
+        label: seimaldigital.sharednews::lang.form.shared_accepted
+        type: checkbox
+        scope: onlyAccepted
+        
     created_date:
         label: indikator.news::lang.form.created_at
         type: daterange
@@ -49,3 +54,8 @@ scopes:
         label: indikator.news::lang.form.updated_at
         type: daterange
         conditions: updated_at >= ':after' AND updated_at <= ':before'
+        
+    published_date:
+        label: indikator.news::lang.form.published_at
+        type: daterange
+        conditions: published_at >= ':after' AND published_at <= ':before'

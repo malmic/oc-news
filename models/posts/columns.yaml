@@ -12,7 +12,7 @@ columns:
         label: indikator.news::lang.form.image
         sortable: false
         clickable: false
-        invisible: true
+        invisible: false
         type: partial
         path: ~/plugins/indikator/news/models/posts/_image.htm
 
@@ -28,8 +28,16 @@ columns:
     categories:
         label: indikator.news::lang.form.categories
         sortable: false
+        invisible: true
         type: partial
         path: ~/plugins/indikator/news/models/posts/_categories.htm
+        
+    region:
+        label: indikator.news::lang.form.region
+        sortable: false
+        invisible: false
+        type: partial
+        path: ~/plugins/indikator/news/models/posts/_site.htm
 
     tags:
         label: indikator.news::lang.form.tags
@@ -41,16 +49,18 @@ columns:
     author:
         label: indikator.news::lang.form.author
         sortable: false
-        invisible: true
+        invisible: false
         type: partial
         path: ~/plugins/indikator/news/models/posts/_author.htm
 
     statistics:
         label: indikator.news::lang.stat.viewed
+        invisible: true
 
     length:
         label: indikator.news::lang.form.length
         sortable: false
+        invisible: true
         type: partial
         path: ~/plugins/indikator/news/models/posts/_length.htm
 
@@ -64,12 +74,14 @@ columns:
     last_send_at:
         label: indikator.news::lang.form.last_send
         searchable: true
+        invisible: true
         type: timesince
 
     stat:
         label: indikator.news::lang.menu.statistics
         sortable: false
         clickable: false
+        invisible: true
         type: partial
         path: ~/plugins/indikator/news/models/posts/_stat.htm
 
@@ -78,10 +90,17 @@ columns:
         sortable: false
         type: partial
         path: ~/plugins/indikator/news/models/posts/_status.htm
+        
+    shared:
+        label: seimaldigital.sharednews::lang.form.shared_accepted
+        sortable: false
+        type: partial
+        path: ~/plugins/indikator/news/models/posts/_shared.htm
 
     published_at:
         label: indikator.news::lang.form.published_at
         searchable: true
+        invisible: true
         type: datetime
 
     created_at:
@@ -93,5 +112,5 @@ columns:
     updated_at:
         label: indikator.news::lang.form.updated_at
         searchable: true
-        invisible: true
+        invisible: false
         type: datetime
