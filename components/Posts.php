@@ -203,4 +203,34 @@ class Posts extends ComponentBase
 
         return $category ?: null;
     }
+    
+    public function onLoadMore()
+    {
+        $category = $this->category ? $this->category->id : null;
+        
+        $perPage = post('perPage') ? post('perPage') + $this->property('postsPerPage') : $this->property('postsPerPage');
+        $posts = NewsPost::listFrontEnd([
+            'page' => $this->property('pageNumber'),
+            'sort' => $this->property('sortOrder'),
+            'perPage' => $perPage,
+            'featured' => $this->property('postFeatured'),
+            'search' => $this->searchFilter,
+            'isTrans' => $this->property('postTranslated'),
+            'category' => $category
+        ]);
+        
+        $posts->each(function ($post) {
+            $post->setUrl($this->postPage, $this->controller);
+            if (isset($category)) {
+                $post->category->each(function ($category) {
+                    $category->setUrl($this->categoryPage, $this->controller);
+                });
+            }
+            
+            $post->tags = explode(',', $post->tags);
+        });
+            
+            $this->posts = $this->page['posts'] = $posts;
+            return ['#news' => $this->renderPartial('news.htm')];
+    }
 }
