@@ -119,6 +119,8 @@ class Posts extends Model
     ];
 
     public $preview = null;
+    
+    protected $propagatable = [];
 
     public function getSendAttribute() {
         return $this->last_send_at != null;
