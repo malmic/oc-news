@@ -15,6 +15,7 @@ class Posts extends Model
 {
     use \October\Rain\Database\Traits\Sluggable;
     use \October\Rain\Database\Traits\Validation;
+    use \October\Rain\Database\Traits\Multisite;
 
     public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
 
