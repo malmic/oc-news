@@ -88,7 +88,7 @@ class Post extends ComponentBase
             $currentLocale = (\RainLab\Translate\Classes\Translator::instance())->getLocale();
             $translations = [];
 
-            foreach (\RainLab\Translate\Models\Locale::listEnabled() as $code => $locale) {
+            foreach (\RainLab\Translate\Classes\Locale::listEnabled() as $code => $locale) {
                 if($currentLocale === $code) continue;
 
                 $post->noFallbackLocale()->lang($code);
