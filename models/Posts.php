@@ -25,7 +25,7 @@ class Posts extends Model
 
     public $rules = [
         'title'    => 'required',
-        'slug'     => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i', 'unique:indikator_news_posts'],
+        'slug'     => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i'],
         'status'   => 'required|between:1,3|numeric',
         'featured' => 'required|between:1,2|numeric'
     ];
@@ -544,6 +544,12 @@ class Posts extends Model
         }
 
         return $this->url = $controller->pageUrl($pageName, $params);
+    }
+    
+    public function listSiteDefinitions($fieldName, $value, $formData) {
+        $siteDefinitions = SiteDefinition::query()->pluck('name', 'id')->toArray();
+        
+        return $siteDefinitions;
     }
 
 }

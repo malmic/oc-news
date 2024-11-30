@@ -6,6 +6,7 @@ use BackendAuth;
 use App;
 use File;
 use Mail;
+use Site;
 use Request;
 use Indikator\News\Models\Posts as Item;
 use Indikator\News\Classes\NewsSender;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use Flash;
 use Lang;
 use Redirect;
+use System\Models\SiteDefinition;
 
 class Posts extends Controller
 {
@@ -245,5 +247,43 @@ class Posts extends Controller
     public function formBeforeCreate($model)
     {
         $model->user_id = $this->user->id;
+    }
+    
+    public function update($recordId, $context = null)
+    {   
+        // Call the FormController behavior update() method
+        $redirect = $this->asExtension('FormController')->update($recordId, $context);
+        
+        $originalPost = Item::find($recordId);
+        if($originalPost instanceof Item) {
+            $this->initForm($originalPost);
+            
+            $formData = $this->formGetWidget()->getSaveData();
+            if(is_array($formData) && array_key_exists('_sharing', $formData) && is_array($formData['_sharing'])) {
+                
+                foreach($formData['_sharing'] as $shareToSiteId) {
+                    $shareToSiteId = (int) $shareToSiteId;
+                    if ((int) $originalPost->site_id === $shareToSiteId) {
+                        continue;
+                    }
+                    
+                    $otherPost = $originalPost->findForSite($shareToSiteId);
+                    
+                    if (!$otherPost) {
+                        // Replicate an save post quietly to not update site_id
+                        $otherPost = $originalPost->replicateWithRelations($originalPost->getMultisiteConfig('except'));
+                        $otherPost->{$originalPost->getSiteIdColumn()} = $shareToSiteId;
+                        $otherPost->site_root_id = $originalPost->site_root_id ?: $originalPost->id;
+                        
+                        $otherPost->saveQuietly();
+                    } else {
+                        // skip, because the post is already shared to this site
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        return $redirect;
     }
 }

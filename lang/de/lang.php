@@ -108,11 +108,12 @@ return [
         'logs_count' => 'Logeinträge',
         'show_timeline' => 'in Dashboard-Timeline anzeigen',
         'region' => 'gehört zu Bundesland',
-        'push_to_regions' => 'für Bundesland freigeben',
+        'push_to_regions' => 'für Website freigeben',
         'show_nova' => 'im Administrationsbereich anzeigen',
         'shared_by_other' => 'Freigegebene',
         'shared_accepted' => 'Übernommen',
         'shared_not_accepted' => 'Abgelehnt',
+        'sharing_tab' => 'Freigabe',
     ],
     'button' => [
         'activate' => 'Aktivieren',
