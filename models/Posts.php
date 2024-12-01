@@ -12,6 +12,8 @@ use October\Rain\Database\NestedTreeScope;
 use Str;
 use Url;
 use System\Models\SiteDefinition;
+use System\Classes\SiteManager;
+use Illuminate\Support\Facades\Log;
 
 class Posts extends Model
 {
@@ -49,6 +51,8 @@ class Posts extends Model
         'published_at',
         'last_send_at'
     ];
+    
+    protected $jsonable = ['_sharedSites'];
 
     public static $allowedSorting = [
         'title asc',
@@ -112,6 +116,13 @@ class Posts extends Model
             'otherKey' => 'category_id',
             'order' => 'name'
         ],
+        'sites' => [
+            SiteDefinition::class,
+            'key' => 'post_id',
+            'otherKey' => 'site_id',
+            'table' => 'seimaldigital_sharednews_posts_sites',
+            'order' => 'name',
+        ],
         'all_categories' => [
             'Indikator\News\Models\Categories',
             'table' => 'indikator_news_posts_categories',
@@ -123,8 +134,43 @@ class Posts extends Model
 
     public $preview = null;
     
-    protected $propagatable = [];
+    protected $propagatable = ['title'];
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::extend(function ($post) {
+            $post->bindEvent('model.relation.beforeDetach', function ($relationName, $relatedId) use ($post) {
+                if($post->relationLoaded('sites')) {
+                    if ($relationName === 'sites' && !is_null($relatedId)) {
+                        $otherPost = $post->findForSite($relatedId);
+                    
+                        if($otherPost instanceof Posts) {
+                            $otherPost->deleteQuietly();
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    
+    public function filterFields($formWidget, $context)
+    {
+        if ($context == 'create') {
+            $formWidget->sites->value = [Site::getEditSiteId()];
+        }
+    }
+    
+    public function onSitesDetached($relatedId)
+    {
+        $site = SiteDefinition::find($relatedId);
+        if ($site) {
+
+        }
+    }
+    
     public function getSendAttribute() {
         return $this->last_send_at != null;
     }
@@ -546,7 +592,11 @@ class Posts extends Model
         return $this->url = $controller->pageUrl($pageName, $params);
     }
     
-    public function listSiteDefinitions($fieldName, $value, $formData) {
+    public function getSharedAttribute() {
+        return $this->shared = [3];
+    }
+    
+    public function listSharedSitesDefinitions($fieldName, $value, $formData) {
         $siteDefinitions = SiteDefinition::query()->pluck('name', 'id')->toArray();
         
         return $siteDefinitions;

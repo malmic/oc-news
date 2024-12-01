@@ -107,17 +107,28 @@ tabs:
             mode: file
             span: storm
             cssClass: col-md-6
-            
-        _sharing:
+
+#        _sharedSite:
+#            tab: indikator.news::lang.form.sharing_tab
+#            label: indikator.news::lang.form.push_to_regions
+#            type: sharedsite
+                        
+        sites:
             tab: indikator.news::lang.form.sharing_tab
             label: indikator.news::lang.form.push_to_regions
+            type: relation
+            nameFrom: name
+
+#        _sharedSites:
+#            tab: indikator.news::lang.form.sharing_tab
+#            label: indikator.news::lang.form.push_to_regions
 #            type: partial
 #            path: '$/indikator/news/controllers/posts/_sharing.htm'
-            type: checkboxlist
-            options: listSiteDefinitions
-            quickselect: true
-            span: storm
-            cssClass: col-md-6
+#            type: checkboxlist
+#            options: listSharedSitesDefinitions
+#            quickselect: true
+#            span: storm
+#            cssClass: col-md-6
 
         categories:
             type: partial

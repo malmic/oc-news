@@ -259,9 +259,9 @@ class Posts extends Controller
             $this->initForm($originalPost);
             
             $formData = $this->formGetWidget()->getSaveData();
-            if(is_array($formData) && array_key_exists('_sharing', $formData) && is_array($formData['_sharing'])) {
+            if(is_array($formData) && array_key_exists('sites', $formData) && is_array($formData['sites'])) {
                 
-                foreach($formData['_sharing'] as $shareToSiteId) {
+                foreach($formData['sites'] as $shareToSiteId) {
                     $shareToSiteId = (int) $shareToSiteId;
                     if ((int) $originalPost->site_id === $shareToSiteId) {
                         continue;
