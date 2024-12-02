@@ -118,6 +118,7 @@ tabs:
             label: indikator.news::lang.form.push_to_regions
             type: relation
             nameFrom: name
+            scope: withoutActive
 
 #        _sharedSites:
 #            tab: indikator.news::lang.form.sharing_tab

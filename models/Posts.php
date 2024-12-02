@@ -143,11 +143,26 @@ class Posts extends Model
         static::extend(function ($post) {
             $post->bindEvent('model.relation.beforeDetach', function ($relationName, $relatedId) use ($post) {
                 if($post->relationLoaded('sites')) {
-                    if ($relationName === 'sites' && !is_null($relatedId)) {
-                        $otherPost = $post->findForSite($relatedId);
-                    
-                        if($otherPost instanceof Posts) {
-                            $otherPost->deleteQuietly();
+                    if ($relationName === 'sites') {
+                        if($post->sites()->exists()) {
+                            $relatedSiteIds = [];
+                            
+                            if(!is_null($relatedId)) {
+                                // we can delete the post for the detached related site
+                                $otherPost = $post->findForSite($relatedId);
+                        
+                                if($otherPost instanceof Posts) {
+                                    $relatedSiteIds[] = $relatedId;
+                                }
+                            } else {
+                                // this is the case when the last related site is being detached
+                                $relatedSiteIds = $post->sites()->withoutActive()->pluck('id')->toArray();
+                                
+                            }
+                            
+                            foreach($relatedSiteIds as $relatedSiteId) {
+                                $post->deleteForSite($relatedSiteId);
+                            }
                         }
                     }
                 }
@@ -162,7 +177,7 @@ class Posts extends Model
             $formWidget->sites->value = [Site::getEditSiteId()];
         }
     }
-    
+        
     public function onSitesDetached($relatedId)
     {
         $site = SiteDefinition::find($relatedId);
