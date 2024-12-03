@@ -1,0 +1,6 @@
+<?php
+
+if (!is_null($record->site_root_id)) {
+    $rootPost = \Indikator\News\Models\Posts::withoutGlobalScopes()->find($record->site_root_id);
+    echo \System\Models\SiteDefinition::whereId($rootPost->site_id)->value('name');
+}

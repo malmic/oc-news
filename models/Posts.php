@@ -134,7 +134,7 @@ class Posts extends Model
 
     public $preview = null;
     
-    protected $propagatable = ['title'];
+    protected $propagatable = ['title', 'created_at', 'updated_at'];
 
     protected static function boot()
     {
