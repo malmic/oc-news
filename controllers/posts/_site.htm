@@ -1,1 +1,8 @@
-juhu
+<?php
+
+if($this->vars['formModel'] instanceof \Indikator\News\Models\Posts) {
+    $rootSite = $this->vars['formModel']->getRootSite();
+    if($rootSite instanceOf \System\Models\SiteDefinition) echo $rootSite->name;
+}
+
+?>

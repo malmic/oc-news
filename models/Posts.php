@@ -610,14 +610,22 @@ class Posts extends Model
         return $this->url = $controller->pageUrl($pageName, $params);
     }
     
-    public function getSharedAttribute() {
-        return $this->shared = [3];
+    public function getRootSite() {
+        if(!is_null($this->site_root_id)) {
+            $rootPost = Posts::withoutGlobalScopes()->find($this->site_root_id);
+            $rootSite = SiteDefinition::find($rootPost->site_id);
+            if($rootSite instanceof SiteDefinition) return $rootSite;
+        }
+        
+        return null;
     }
     
-    public function listSharedSitesDefinitions($fieldName, $value, $formData) {
-        $siteDefinitions = SiteDefinition::query()->pluck('name', 'id')->toArray();
+    
+    
+//     public function listSharedSitesDefinitions($fieldName, $value, $formData) {
+//         $siteDefinitions = SiteDefinition::query()->pluck('name', 'id')->toArray();
         
-        return $siteDefinitions;
-    }
+//         return $siteDefinitions;
+//     }
 
 }

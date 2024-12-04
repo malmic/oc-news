@@ -1,8 +1,7 @@
 <?php
 
-if (!is_null($record->site_root_id)) {
-    $rootPost = \Indikator\News\Models\Posts::withoutGlobalScopes()->find($record->site_root_id);
-    if($rootPost instanceof \Indikator\News\Models\Posts) {
-        echo \System\Models\SiteDefinition::whereId($rootPost->site_id)->value('name');
-    }
+$rootSite = $record->getRootSite();
+
+if (!is_null($rootSite)) {
+    echo $rootSite->name;
 }

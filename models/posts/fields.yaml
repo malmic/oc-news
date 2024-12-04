@@ -29,7 +29,7 @@ fields:
     site:
         type: partial
         path: '$/indikator/news/controllers/posts/_site.htm'
-        label: 'indikator.news::lang.form.site'
+        label: 'indikator.news::lang.form.region'
         span: storm
         cssClass: 'col-sm-12 col-lg-6'
 
