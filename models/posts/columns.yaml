@@ -100,7 +100,7 @@ columns:
     published_at:
         label: indikator.news::lang.form.published_at
         searchable: true
-        invisible: true
+        invisible: false
         type: datetime
 
     created_at:
@@ -112,5 +112,5 @@ columns:
     updated_at:
         label: indikator.news::lang.form.updated_at
         searchable: true
-        invisible: false
+        invisible: true
         type: datetime

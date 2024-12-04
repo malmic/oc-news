@@ -3,7 +3,7 @@
 use October\Rain\Database\Updates\Migration;
 use Schema;
 
-class AddUserFieldToTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -25,4 +25,4 @@ class AddUserFieldToTable extends Migration
             $table->dropColumn(['image_caption', 'site_id', 'site_root_id', 'photoalbum_id', 'show_timeline', 'show_nova']);
         });
     }
-}
+};

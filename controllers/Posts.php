@@ -263,16 +263,17 @@ class Posts extends Controller
                 
                 foreach($formData['sites'] as $shareToSiteId) {
                     $shareToSiteId = (int) $shareToSiteId;
+                    
                     if ((int) $originalPost->site_id === $shareToSiteId) {
                         continue;
                     }
                     
                     $otherPost = $originalPost->findForSite($shareToSiteId);
-                    
                     if (!$otherPost) {
                         // Replicate an save post quietly to not update site_id
                         $otherPost = $originalPost->replicateWithRelations($originalPost->getMultisiteConfig('except'));
                         $otherPost->{$originalPost->getSiteIdColumn()} = $shareToSiteId;
+                        // this causes, that a post can't be replicated more than once
                         $otherPost->site_root_id = $originalPost->site_root_id ?: $originalPost->id;
                         
                         $otherPost->saveQuietly();

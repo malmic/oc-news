@@ -5,6 +5,7 @@ use DB;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
 
+
 /**
  * CreateStaticpagesTable Migration
  *
@@ -19,15 +20,11 @@ return new class extends Migration
     {
         $posts = DB::connection('octobercmsv1')->select('select * from indikator_news_posts');
         foreach($posts as $post) {
-            $migratedPost = DB::connection('mysql')->table('indikator_news_posts')->insert(get_object_vars($post));
-        }
-                    
-        $postRegionRelations = DB::connection('octobercmsv1')->select('select * from indikator_news_posts_regions');
-        
-        foreach($postRegionRelations as $postRegionRelation) {
-            $migratedPost = DB::connection('mysql')->table('seimaldigital_sharednews_posts_sites')->insert(get_object_vars($postRegionRelation));
-        }
+            $post->site_id = (int) $post->region_id;
+            unset($post->region_id);
             
+            $migratedPost = DB::connection('mysql')->table('indikator_news_posts')->insert(get_object_vars($post));
+        }            
     }
     
     /**
