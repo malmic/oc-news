@@ -114,6 +114,7 @@ return [
         'shared_accepted' => 'Übernommen',
         'shared_not_accepted' => 'Abgelehnt',
         'sharing_tab' => 'Freigabe',
+        'deleted' => 'Gelöscht',
     ],
     'button' => [
         'activate' => 'Aktivieren',

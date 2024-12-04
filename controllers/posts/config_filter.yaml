@@ -35,6 +35,11 @@ scopes:
         type: checkbox
         conditions: status = 3
 
+    status_deleted:
+        label: indikator.news::lang.form.deleted
+        type: checkbox
+        scope: onlyTrashed
+        
     shared_by_other:
         label: seimaldigital.sharednews::lang.form.shared_by_other
         type: checkbox

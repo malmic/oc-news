@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('photoalbum_id')->nullable();
             $table->integer('show_timeline')->default(0);
             $table->integer('show_nova')->default(0);
+            $table->softDeletes()->after('updated_at');
         });
     }
 

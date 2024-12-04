@@ -20,6 +20,7 @@ class Posts extends Model
     use \October\Rain\Database\Traits\Sluggable;
     use \October\Rain\Database\Traits\Validation;
     use \October\Rain\Database\Traits\Multisite;
+    use \October\Rain\Database\Traits\SoftDelete;
 
     public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
 
@@ -49,7 +50,8 @@ class Posts extends Model
 
     protected $dates = [
         'published_at',
-        'last_send_at'
+        'last_send_at',
+        'deleted_at'
     ];
     
     protected $jsonable = ['_sharedSites'];
@@ -62,7 +64,9 @@ class Posts extends Model
         'updated_at asc',
         'updated_at desc',
         'published_at asc',
-        'published_at desc'
+        'published_at desc',
+        'deleted_at asc',
+        'deleted_at desc'
     ];
 
     public $belongsTo = [
@@ -419,8 +423,7 @@ class Posts extends Model
         $site = Site::getEditSite();
         
         $query->where(function($query) use ($site) {
-            $query
-            ->where('site_id', '!=', $site->id)
+            $query->where('site_root_id', '!=', $site->id)
             ->whereHas('sites', function($q) use ($site) {
                 $q->where('site_id', $site->id)
                 ->whereNotNull('accepted_at');
@@ -434,12 +437,7 @@ class Posts extends Model
     {
         $site = Site::getEditSite();
         
-        $query->where(function($query) use ($site) {
-            $query
-            ->whereHas('sites', function($q) use ($site) {
-                $q->where('site_id', '!=', $site->id);
-            });
-        });
+        $query->where('site_root_id', '!=', $site->id);
             
         return $query;
     }
@@ -462,11 +460,11 @@ class Posts extends Model
         return $query->where('featured', $value);
     }
 
-    public function duplicate($post)
+    public function duplicate($post, bool $asCopy = true)
     {
         $clone = new Posts();
-        $clone->title = \Lang::get('indikator.news::lang.form.clone_of').' '.$post->title;
-        $clone->slug = $post->slug.'-'.now()->format('Y-m-d-h-i-s');
+        $clone->title = ($asCopy === true) ? \Lang::get('indikator.news::lang.form.clone_of').' '.$post->title : $post->title;
+        $clone->slug = ($asCopy === true) ? $post->slug.'-'.now()->format('Y-m-d-h-i-s') : $post->slug;
         $clone->status = 3;
         $clone->introductory = $post->introductory;
         $clone->content = $post->content;
@@ -475,6 +473,11 @@ class Posts extends Model
         $clone->enable_newsletter_content = $post->enable_newsletter_content;
         $clone->newsletter_content = $post->newsletter_content;
 
+        if($asCopy !== true) {
+            $clone->user_id = BackendAuth::getUser()->id;
+            $clone->site_root_id = null;
+        }
+        
         $clone->seo_desc = $post->seo_desc;     
         $clone->seo_title = $post->seo_title;
         $clone->seo_keywords = $post->seo_keywords;

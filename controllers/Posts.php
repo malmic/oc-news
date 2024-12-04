@@ -238,6 +238,78 @@ class Posts extends Controller
 
         return $this->makePartial('show_stat');
     }
+    
+    public function onAcceptOriginalPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+                
+                $post = Item::withTrashed()->find($itemId);
+                if($post instanceof Item) {
+                    if($post->trashed()) $post->restore();
+                    $post->status = 1;
+                    $post->saveQuietly();
+                    $post->sites()->updateExistingPivot($post->site_root_id, ['accepted_at' => now()]);
+                    
+                    $this->setMessage('accepted_original_post');
+                }
+            }
+        }
+        
+        return $this->listRefresh();
+    }
+    
+    public function onDuplicateToRegionPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+                
+                $post = Item::withTrashed()->find($itemId);
+                if($post instanceof Item) {
+                    $newPost = $post->duplicate($post, false);
+                    $newPost->status = 1;
+                    $newPost->site_root_id = null;
+                    $newPost->published_at = now();
+                    $newPost->saveQuietly();
+                    
+                    $post->status = 3;
+                    $post->saveQuietly();
+                    $post->delete();
+                    
+                    $this->setMessage('duplicated_to_region');
+                }
+            }
+        }
+        
+        return $this->listRefresh();
+    }
+    
+    public function onDeclineOriginalPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+                
+                $post = Item::find($itemId);
+                if($post instanceof Item && !is_null($post->site_root_id)) {
+                    $post->status = 3;
+                    $post->saveQuietly();
+                    $post->delete();
+                    $this->setMessage('declined_original_post');
+                }
+            }
+        }
+        
+        return $this->listRefresh();
+    }
 
     /**
      * Add user_id for user relationship before save
@@ -275,6 +347,8 @@ class Posts extends Controller
                         $otherPost->{$originalPost->getSiteIdColumn()} = $shareToSiteId;
                         // this causes, that a post can't be replicated more than once
                         $otherPost->site_root_id = $originalPost->site_root_id ?: $originalPost->id;
+                        $otherPost->status = 3;
+                        $otherPost->published_at = null;
                         
                         $otherPost->saveQuietly();
                     } else {
