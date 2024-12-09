@@ -22,6 +22,7 @@ return new class extends Migration
         foreach($posts as $post) {
             $post->site_id = (int) $post->region_id;
             unset($post->region_id);
+            unset($post->category_id);
             
             $migratedPost = DB::connection('mysql')->table('indikator_news_posts')->insert(get_object_vars($post));
         }            
