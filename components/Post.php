@@ -99,15 +99,21 @@ class Post extends ComponentBase
                     $category = $post->categories->first();
                 }
 
-                $category->translateContext($code);
+                $params = [
+                    'slug' => $post->slug
+                ];
+                
+                if($category) {
+                    $category->translateContext($code);
+                    $params['category'] = $category->slug;
+                }
+                                
+                
                 $translations[$code] =  [
                     'code' => $code,
                     'name' => $locale,
                     'slug' => $post->slug,
-                    'url' => $this->rewriteTranslatablePageUrl([
-                        'category' => $category->slug,
-                        'slug' => $post->slug
-                    ], $code),
+                    'url' => $this->rewriteTranslatablePageUrl($params, $code),
                     'title' => $post->title
                 ];
             }
