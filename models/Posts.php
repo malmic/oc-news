@@ -71,6 +71,7 @@ class Posts extends Model
 
     public $belongsTo = [
         'user' => ['Backend\Models\User'],
+        'photoalbum' => ['Graker\PhotoAlbums\Models\Album', 'key' => 'photoalbum_id']
 //         'site' => [SiteDefinition::class]
     ];
 

@@ -115,6 +115,7 @@ return [
         'shared_not_accepted' => 'Abgelehnt',
         'sharing_tab' => 'Freigabe',
         'deleted' => 'Gelöscht',
+        'photoalbum' => 'Photoalbum verknüpfen',
     ],
     'button' => [
         'activate' => 'Aktivieren',

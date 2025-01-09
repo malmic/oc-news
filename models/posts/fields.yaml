@@ -9,29 +9,38 @@ fields:
         required: true
         attributes:
            autofocus: ''
-        span: storm
+        span: left
         cssClass: col-lg-6
 
     slug:
         label: indikator.news::lang.form.slug
         required: true
         preset: title
-        span: storm
+        span: right
         cssClass: col-lg-6
 
 
     tags:
         label: indikator.news::lang.form.tags
         type: taglist
-        span: storm
+        span: left
         cssClass: col-md-6   
-          
-    site:
-        type: partial
-        path: '$/indikator/news/controllers/posts/_site.htm'
-        label: 'indikator.news::lang.form.region'
-        span: storm
-        cssClass: 'col-sm-12 col-lg-6'
+
+    photoalbum:
+        label: 'indikator.news::lang.form.photoalbum'
+        nameFrom: photoalbum
+        select: title
+        span: auto
+        type: relation
+        emptyOption: '-'
+        cssClass: col-sm-12 col-lg-6
+                  
+#    site:
+#        type: partial
+#        path: '$/indikator/news/controllers/posts/_site.htm'
+#        label: 'indikator.news::lang.form.region'
+#        span: storm
+#        cssClass: 'col-sm-12 col-lg-6'
 
 tabs:
 

@@ -146,3 +146,4 @@
     - Multisite compatibility for OctoberCMS v3.
     - add_multisite_fields_to_table.php
     - migrate_indikator_news_posts_table.php
+1.13.2: Added relation to photoalbums
