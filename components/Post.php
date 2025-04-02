@@ -173,7 +173,7 @@ class Post extends ComponentBase
             ? $post->transWhere('slug', $slug)
             : $post->where('slug', $slug);
 
-        $post = $post->isPublished()->first();
+        $post = $post->first();
 
         if (!$post) {
             return $post;

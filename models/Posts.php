@@ -139,7 +139,20 @@ class Posts extends Model
 
     public $preview = null;
     
-    protected $propagatable = ['title', 'created_at', 'updated_at'];
+    protected $propagatable = [
+        'title',
+        'slug',
+        'introductory',
+        'content',
+        'image',
+        'image_caption',
+        'seo_desc',
+        'seo_title',
+        'seo_keywords',
+        'seo_image',
+        'created_at',
+        'updated_at'
+    ];
 
     protected static function boot()
     {
