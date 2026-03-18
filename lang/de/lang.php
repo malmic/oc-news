@@ -140,7 +140,10 @@ return [
         'subscriber_confirmation_token_expired' => 'Der Bestätigungslink ist nicht mehr gültig. Bitte abonnieren Sie erneut den Newsletter.',
         'subscriber_confirmation' => 'Sie haben Ihre Emailadresse erfolgreich bestätigt. Sie erhalten in Zukunft unseren Newsletter.',
         'subscriber_already_confirmed' => 'Sie haben bereits Ihre Emailadresse bestätigt.',
-        'news_clone_confirm' => 'Möchten Sie wirklich diesen Eintrag kopieren?'
+        'news_clone_confirm' => 'Möchten Sie wirklich diesen Eintrag kopieren?',
+        'accepted_original_post' => 'Der Originalartikel wurde übernommen.',
+        'duplicated_to_region' => 'Der Artikel wurde als eigene Version kopiert.',
+        'declined_original_post' => 'Der Originalartikel wurde abgelehnt und gelöscht.',
     ],
     'backend_settings' => [
         'description' => 'Einstellungen verwalten',
