@@ -6,6 +6,7 @@ use BackendAuth;
 use App;
 use File;
 use Mail;
+use Site;
 use Request;
 use Indikator\News\Models\Posts as Item;
 use Indikator\News\Classes\NewsSender;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use Flash;
 use Lang;
 use Redirect;
+use System\Models\SiteDefinition;
 
 class Posts extends Controller
 {
@@ -221,6 +223,13 @@ class Posts extends Controller
         return $this->makePartial('show_image');
     }
 
+    public function onShowSite()
+    {
+        $this->vars['post'] = $post = Item::whereId(post('id'))->first();
+
+        return $this->makePartial('belongs_to_site');
+    }
+
     public function onShowStat()
     {
         $this->vars['post'] = $post = Item::whereId(post('id'))->first();
@@ -228,6 +237,79 @@ class Posts extends Controller
         $this->vars['published_at'] = ($post->published_at) ? $post->published_at : '<em>'.e(trans('indikator.news::lang.form.no_data')).'</em>';
 
         return $this->makePartial('show_stat');
+    }
+
+    public function onAcceptOriginalPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+
+                $post = Item::withTrashed()->find($itemId);
+                if($post instanceof Item) {
+                    if($post->trashed()) $post->restore();
+                    $post->status = 1;
+                    if(!$post->published_at) $post->published_at = now();
+                    $post->saveQuietly();
+                    $post->sites()->updateExistingPivot($post->site_root_id, ['accepted_at' => now()]);
+
+                    $this->setMessage('accepted_original_post');
+                }
+            }
+        }
+
+        return $this->listRefresh();
+    }
+
+    public function onDuplicateToRegionPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+
+                $post = Item::withTrashed()->find($itemId);
+                if($post instanceof Item) {
+                    $newPost = $post->duplicate($post, false);
+                    $newPost->status = 1;
+                    $newPost->site_root_id = null;
+                    $newPost->published_at = now();
+                    $newPost->saveQuietly();
+
+                    $post->status = 3;
+                    $post->saveQuietly();
+                    $post->delete();
+
+                    $this->setMessage('duplicated_to_region');
+                }
+            }
+        }
+
+        return $this->listRefresh();
+    }
+
+    public function onDeclineOriginalPosts()
+    {
+        if ($this->isSelected()) {
+            foreach (post('checked') as $itemId) {
+                if (!$post = Item::whereId($itemId)) {
+                    continue;
+                }
+
+                $post = Item::find($itemId);
+                if($post instanceof Item && !is_null($post->site_root_id)) {
+                    $post->status = 3;
+                    $post->saveQuietly();
+                    $post->delete();
+                    $this->setMessage('declined_original_post');
+                }
+            }
+        }
+
+        return $this->listRefresh();
     }
 
     /**
@@ -238,5 +320,46 @@ class Posts extends Controller
     public function formBeforeCreate($model)
     {
         $model->user_id = $this->user->id;
+    }
+
+    public function update($recordId, $context = null)
+    {
+        // Call the FormController behavior update() method
+        $redirect = $this->asExtension('FormController')->update($recordId, $context);
+
+        $originalPost = Item::find($recordId);
+        if($originalPost instanceof Item) {
+            $this->initForm($originalPost);
+
+            $formData = $this->formGetWidget()->getSaveData();
+            if(is_array($formData) && array_key_exists('sites', $formData) && is_array($formData['sites'])) {
+
+                foreach($formData['sites'] as $shareToSiteId) {
+                    $shareToSiteId = (int) $shareToSiteId;
+
+                    if ((int) $originalPost->site_id === $shareToSiteId) {
+                        continue;
+                    }
+
+                    $otherPost = $originalPost->findForSite($shareToSiteId);
+                    if (!$otherPost) {
+                        // Replicate an save post quietly to not update site_id
+                        $otherPost = $originalPost->replicateWithRelations($originalPost->getMultisiteConfig('except'));
+                        $otherPost->{$originalPost->getSiteIdColumn()} = $shareToSiteId;
+                        // this causes, that a post can't be replicated more than once
+                        $otherPost->site_root_id = $originalPost->site_root_id ?: $originalPost->id;
+                        $otherPost->status = 3;
+                        $otherPost->published_at = null;
+
+                        $otherPost->saveQuietly();
+                    } else {
+                        // skip, because the post is already shared to this site
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return $redirect;
     }
 }

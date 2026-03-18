@@ -1,0 +1,19 @@
+<?php
+
+$text = [
+    1 => 'not_accepted',
+    2 => 'accepted',
+];
+
+$class = [
+    2 => 'text-success',
+    1 => 'text-danger',
+];
+
+$icon = [
+    2 => 'oc-icon-check',
+    1 => 'oc-icon-ban',
+];
+
+if(in_array($record->accepted, [1,2]))
+echo '<span class="'.$icon[$record->accepted].' '.$class[$record->accepted].'">'.Lang::get('indikator.news::lang.form.shared_'.$text[$record->accepted]).'</span>';

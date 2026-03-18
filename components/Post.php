@@ -88,7 +88,7 @@ class Post extends ComponentBase
             $currentLocale = (\RainLab\Translate\Classes\Translator::instance())->getLocale();
             $translations = [];
 
-            foreach (\RainLab\Translate\Models\Locale::listEnabled() as $code => $locale) {
+            foreach (\RainLab\Translate\Classes\Locale::listEnabled() as $code => $locale) {
                 if($currentLocale === $code) continue;
 
                 $post->noFallbackLocale()->lang($code);
@@ -99,15 +99,21 @@ class Post extends ComponentBase
                     $category = $post->categories->first();
                 }
 
-                $category->translateContext($code);
+                $params = [
+                    'slug' => $post->slug
+                ];
+                
+                if($category) {
+                    $category->translateContext($code);
+                    $params['category'] = $category->slug;
+                }
+                                
+                
                 $translations[$code] =  [
                     'code' => $code,
                     'name' => $locale,
                     'slug' => $post->slug,
-                    'url' => $this->rewriteTranslatablePageUrl([
-                        'category' => $category->slug,
-                        'slug' => $post->slug
-                    ], $code),
+                    'url' => $this->rewriteTranslatablePageUrl($params, $code),
                     'title' => $post->title
                 ];
             }
@@ -167,7 +173,7 @@ class Post extends ComponentBase
             ? $post->transWhere('slug', $slug)
             : $post->where('slug', $slug);
 
-        $post = $post->isPublished()->first();
+        $post = $post->first();
 
         if (!$post) {
             return $post;

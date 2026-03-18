@@ -26,17 +26,23 @@ class ChangeColumnsType2 extends Migration
     public function down()
     {
         Schema::table('indikator_news_posts', function ($table) {
-            $table->dropIndex('indikator_news_posts_slug_index')->change();
-            $table->dropIndex('indikator_news_posts_category_id_index')->change();
-            $table->dropIndex('indikator_news_posts_published_at_index')->change();           
-            $table->dropIndex('indikator_news_posts_featured_index')->change();
+            $sm = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound = $sm->listTableIndexes('indikator_news_posts');
+            
+            if(array_key_exists("indikator_news_posts_slug_index", $indexesFound)) $table->dropIndex('indikator_news_posts_slug_index')->change();
+            if(array_key_exists("indikator_news_posts_category_id_index", $indexesFound)) $table->dropIndex('indikator_news_posts_category_id_index')->change();
+            if(array_key_exists("indikator_news_posts_published_at_index", $indexesFound)) $table->dropIndex('indikator_news_posts_published_at_index')->change();           
+            if(array_key_exists("indikator_news_posts_featured_index", $indexesFound)) $table->dropIndex('indikator_news_posts_featured_index')->change();
             $table->string('featured', 1)->default(2)->change();
             $table->string('category_id', 3)->default(0)->change(); 
         });
 
         Schema::table('indikator_news_categories', function ($table) {
-            $table->dropIndex('indikator_news_categories_slug_index');
-            $table->dropIndex('indikator_news_categories_sort_order_index');
+            $sm = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound = $sm->listTableIndexes('indikator_news_categories');
+            
+            if(array_key_exists("indikator_news_categories_slug_index", $indexesFound)) $table->dropIndex('indikator_news_categories_slug_index');
+            if(array_key_exists("indikator_news_categories_sort_order_index", $indexesFound)) $table->dropIndex('indikator_news_categories_sort_order_index');
             $table->string('sort_order', 3)->default(1)->change();           
         });
     }
