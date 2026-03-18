@@ -1,6 +1,7 @@
 <?php namespace Indikator\News\Models;
 
 use Model;
+use Site;
 use BackendAuth;
 use Carbon\Carbon;
 use Cms\Classes\Page as CmsPage;
@@ -10,12 +11,16 @@ use App;
 use October\Rain\Database\NestedTreeScope;
 use Str;
 use Url;
+use System\Models\SiteDefinition;
+use System\Classes\SiteManager;
+use Illuminate\Support\Facades\Log;
 
 class Posts extends Model
 {
     use \October\Rain\Database\Traits\Sluggable;
     use \October\Rain\Database\Traits\Validation;
     use \October\Rain\Database\Traits\Multisite;
+    use \October\Rain\Database\Traits\SoftDelete;
 
     public $implement = ['@RainLab.Translate.Behaviors.TranslatableModel'];
 
@@ -23,7 +28,7 @@ class Posts extends Model
 
     public $rules = [
         'title'    => 'required',
-        'slug'     => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i', 'unique:indikator_news_posts'],
+        'slug'     => ['regex:/^[a-z0-9\/\:_\-\*\[\]\+\?\|]*$/i'],
         'status'   => 'required|between:1,3|numeric',
         'featured' => 'required|between:1,2|numeric'
     ];
@@ -45,8 +50,11 @@ class Posts extends Model
 
     protected $dates = [
         'published_at',
-        'last_send_at'
+        'last_send_at',
+        'deleted_at'
     ];
+    
+    protected $jsonable = ['_sharedSites'];
 
     public static $allowedSorting = [
         'title asc',
@@ -56,11 +64,15 @@ class Posts extends Model
         'updated_at asc',
         'updated_at desc',
         'published_at asc',
-        'published_at desc'
+        'published_at desc',
+        'deleted_at asc',
+        'deleted_at desc'
     ];
 
     public $belongsTo = [
-        'user' => ['Backend\Models\User']
+        'user' => ['Backend\Models\User'],
+        'photoalbum' => ['Graker\PhotoAlbums\Models\Album', 'key' => 'photoalbum_id']
+//         'site' => [SiteDefinition::class]
     ];
 
     public $hasMany = [
@@ -109,6 +121,13 @@ class Posts extends Model
             'otherKey' => 'category_id',
             'order' => 'name'
         ],
+        'sites' => [
+            SiteDefinition::class,
+            'key' => 'post_id',
+            'otherKey' => 'site_id',
+            'table' => 'seimaldigital_sharednews_posts_sites',
+            'order' => 'name',
+        ],
         'all_categories' => [
             'Indikator\News\Models\Categories',
             'table' => 'indikator_news_posts_categories',
@@ -119,7 +138,72 @@ class Posts extends Model
     ];
 
     public $preview = null;
+    
+    protected $propagatable = [
+        'title',
+        'slug',
+        'introductory',
+        'content',
+        'image',
+        'image_caption',
+        'seo_desc',
+        'seo_title',
+        'seo_keywords',
+        'seo_image',
+        'created_at',
+        'updated_at'
+    ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::extend(function ($post) {
+            $post->bindEvent('model.relation.beforeDetach', function ($relationName, $relatedId) use ($post) {
+                if($post->relationLoaded('sites')) {
+                    if ($relationName === 'sites') {
+                        if($post->sites()->exists()) {
+                            $relatedSiteIds = [];
+                            
+                            if(!is_null($relatedId)) {
+                                // we can delete the post for the detached related site
+                                $otherPost = $post->findForSite($relatedId);
+                        
+                                if($otherPost instanceof Posts) {
+                                    $relatedSiteIds[] = $relatedId;
+                                }
+                            } else {
+                                // this is the case when the last related site is being detached
+                                $relatedSiteIds = $post->sites()->withoutActive()->pluck('id')->toArray();
+                                
+                            }
+                            
+                            foreach($relatedSiteIds as $relatedSiteId) {
+                                $post->deleteForSite($relatedSiteId);
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    
+    public function filterFields($formWidget, $context)
+    {
+        if ($context == 'create') {
+            $formWidget->sites->value = [Site::getEditSiteId()];
+        }
+    }
+        
+    public function onSitesDetached($relatedId)
+    {
+        $site = SiteDefinition::find($relatedId);
+        if ($site) {
+
+        }
+    }
+    
     public function getSendAttribute() {
         return $this->last_send_at != null;
     }
@@ -347,6 +431,30 @@ class Posts extends Model
             ->where('published_at', '<', Carbon::now())
         ;
     }
+    
+    public function scopeOnlyAccepted($query)
+    {
+        $site = Site::getEditSite();
+        
+        $query->where(function($query) use ($site) {
+            $query->where('site_root_id', '!=', $site->id)
+            ->whereHas('sites', function($q) use ($site) {
+                $q->where('site_id', $site->id)
+                ->whereNotNull('accepted_at');
+            });
+        });
+            
+            return $query;
+    }
+    
+    public function scopeOnlyPushed($query)
+    {
+        $site = Site::getEditSite();
+        
+        $query->where('site_root_id', '!=', $site->id);
+            
+        return $query;
+    }
 
     /**
      * Allows filtering for specifc categories.
@@ -366,11 +474,11 @@ class Posts extends Model
         return $query->where('featured', $value);
     }
 
-    public function duplicate($post)
+    public function duplicate($post, bool $asCopy = true)
     {
         $clone = new Posts();
-        $clone->title = \Lang::get('indikator.news::lang.form.clone_of').' '.$post->title;
-        $clone->slug = $post->slug.'-'.now()->format('Y-m-d-h-i-s');
+        $clone->title = ($asCopy === true) ? \Lang::get('indikator.news::lang.form.clone_of').' '.$post->title : $post->title;
+        $clone->slug = ($asCopy === true) ? $post->slug.'-'.now()->format('Y-m-d-h-i-s') : $post->slug;
         $clone->status = 3;
         $clone->introductory = $post->introductory;
         $clone->content = $post->content;
@@ -379,6 +487,11 @@ class Posts extends Model
         $clone->enable_newsletter_content = $post->enable_newsletter_content;
         $clone->newsletter_content = $post->newsletter_content;
 
+        if($asCopy !== true) {
+            $clone->user_id = BackendAuth::getUser()->id;
+            $clone->site_root_id = null;
+        }
+        
         $clone->seo_desc = $post->seo_desc;     
         $clone->seo_title = $post->seo_title;
         $clone->seo_keywords = $post->seo_keywords;
@@ -510,5 +623,23 @@ class Posts extends Model
 
         return $this->url = $controller->pageUrl($pageName, $params);
     }
+    
+    public function getRootSite() {
+        if(!is_null($this->site_root_id)) {
+            $rootPost = Posts::withoutGlobalScopes()->find($this->site_root_id);
+            $rootSite = SiteDefinition::find($rootPost->site_id);
+            if($rootSite instanceof SiteDefinition) return $rootSite;
+        }
+        
+        return null;
+    }
+    
+    
+    
+//     public function listSharedSitesDefinitions($fieldName, $value, $formData) {
+//         $siteDefinitions = SiteDefinition::query()->pluck('name', 'id')->toArray();
+        
+//         return $siteDefinitions;
+//     }
 
 }
