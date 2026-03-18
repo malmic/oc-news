@@ -222,11 +222,11 @@ class Posts extends Controller
 
         return $this->makePartial('show_image');
     }
-    
+
     public function onShowSite()
     {
         $this->vars['post'] = $post = Item::whereId(post('id'))->first();
-        
+
         return $this->makePartial('belongs_to_site');
     }
 
@@ -238,7 +238,7 @@ class Posts extends Controller
 
         return $this->makePartial('show_stat');
     }
-    
+
     public function onAcceptOriginalPosts()
     {
         if ($this->isSelected()) {
@@ -246,22 +246,23 @@ class Posts extends Controller
                 if (!$post = Item::whereId($itemId)) {
                     continue;
                 }
-                
+
                 $post = Item::withTrashed()->find($itemId);
                 if($post instanceof Item) {
                     if($post->trashed()) $post->restore();
                     $post->status = 1;
+                    if(!$post->published_at) $post->published_at = now();
                     $post->saveQuietly();
                     $post->sites()->updateExistingPivot($post->site_root_id, ['accepted_at' => now()]);
-                    
+
                     $this->setMessage('accepted_original_post');
                 }
             }
         }
-        
+
         return $this->listRefresh();
     }
-    
+
     public function onDuplicateToRegionPosts()
     {
         if ($this->isSelected()) {
@@ -269,7 +270,7 @@ class Posts extends Controller
                 if (!$post = Item::whereId($itemId)) {
                     continue;
                 }
-                
+
                 $post = Item::withTrashed()->find($itemId);
                 if($post instanceof Item) {
                     $newPost = $post->duplicate($post, false);
@@ -277,19 +278,19 @@ class Posts extends Controller
                     $newPost->site_root_id = null;
                     $newPost->published_at = now();
                     $newPost->saveQuietly();
-                    
+
                     $post->status = 3;
                     $post->saveQuietly();
                     $post->delete();
-                    
+
                     $this->setMessage('duplicated_to_region');
                 }
             }
         }
-        
+
         return $this->listRefresh();
     }
-    
+
     public function onDeclineOriginalPosts()
     {
         if ($this->isSelected()) {
@@ -297,7 +298,7 @@ class Posts extends Controller
                 if (!$post = Item::whereId($itemId)) {
                     continue;
                 }
-                
+
                 $post = Item::find($itemId);
                 if($post instanceof Item && !is_null($post->site_root_id)) {
                     $post->status = 3;
@@ -307,7 +308,7 @@ class Posts extends Controller
                 }
             }
         }
-        
+
         return $this->listRefresh();
     }
 
@@ -320,26 +321,26 @@ class Posts extends Controller
     {
         $model->user_id = $this->user->id;
     }
-    
+
     public function update($recordId, $context = null)
-    {   
+    {
         // Call the FormController behavior update() method
         $redirect = $this->asExtension('FormController')->update($recordId, $context);
-        
+
         $originalPost = Item::find($recordId);
         if($originalPost instanceof Item) {
             $this->initForm($originalPost);
-            
+
             $formData = $this->formGetWidget()->getSaveData();
             if(is_array($formData) && array_key_exists('sites', $formData) && is_array($formData['sites'])) {
-                
+
                 foreach($formData['sites'] as $shareToSiteId) {
                     $shareToSiteId = (int) $shareToSiteId;
-                    
+
                     if ((int) $originalPost->site_id === $shareToSiteId) {
                         continue;
                     }
-                    
+
                     $otherPost = $originalPost->findForSite($shareToSiteId);
                     if (!$otherPost) {
                         // Replicate an save post quietly to not update site_id
@@ -349,7 +350,7 @@ class Posts extends Controller
                         $otherPost->site_root_id = $originalPost->site_root_id ?: $originalPost->id;
                         $otherPost->status = 3;
                         $otherPost->published_at = null;
-                        
+
                         $otherPost->saveQuietly();
                     } else {
                         // skip, because the post is already shared to this site
@@ -358,7 +359,7 @@ class Posts extends Controller
                 }
             }
         }
-        
+
         return $redirect;
     }
 }
